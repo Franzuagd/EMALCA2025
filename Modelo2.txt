@@ -1,0 +1,90 @@
+$title Modelo #2
+
+* Definición de conjuntos
+Sets
+   i  'ciudades'
+   j  'almacenes';
+
+* Parámetros
+Parameters
+   w(i)       'cantidad requerida por cada ciudad'
+   d(i,j)     'distancia entre la ciudad i y el almacén j';
+
+* Variables
+Variables
+   Z2         'valor del segundo objetivo (distancia total)';
+
+Binary Variables
+   x(j)       'si el almacén j es un centro de distribución'
+   Y(i,j)     'si la ciudad i se asigna al centro j';
+
+* Ecuaciones
+Equations
+   upper(j)     'una ciudad solo puede asignarse a centros abiertos'
+   uniqueness(i)'cada ciudad se asigna a un único centro' 
+   maximum      'No mas de cuatro centros'
+   closness(i,j)    'menor igual que tres horas'
+   objetivo2    'función objetivo: minimizar distancia total ponderada';
+
+* Definición de las ecuaciones
+upper(j).. 
+   sum(i, Y(i,j)) =L= card(i) * x(j);
+
+uniqueness(i)..
+   sum(j, Y(i,j)) =E= 1;
+   
+maximum..
+    sum(j,x(j)) =L= 4;
+    
+closness(i,j)..
+    Y(i,j)*d(i,j) =L= 3
+;
+
+objetivo2..
+   Z2 =E= sum((i,j), d(i,j) * Y(i,j) * w(i));
+
+* Incluir datos (asegúrate de tener bien definido 'datos.gms')
+$include 'data_tarea.gms'
+
+* Definir modelo y resolver
+Model Dos /upper, uniqueness, objetivo2, maximum, closness/;
+Solve Dos minimizing Z2 using MIP;
+
+* Mostrar resultados
+display Y.l, x.l, Z2.l;
+
+
+-----------------------------------------------------
+
+Sets
+   i ciudades /Chipane, Saute, Camo-Camo, Faimba, Mazive, Macuene, Fernando, Banguene, Funhalouro/
+   j almacenes /Chipane, Saute, Camo-Camo, Faimba, Mazive, Macuene, Fernando, Banguene, Funhalouro/;
+
+Parameters
+   w(i) cantidad requerida
+   / Chipane     30
+     Saute       10
+     Camo-Camo   40
+     Faimba      40
+     Mazive      30
+     Macuene     20
+     Fernando    10
+     Banguene    40
+     Funhalouro  80 /;
+
+Table d(i,j) Distancia entre la ciudad i y el almacén j
+                Chipane Saute Camo-Camo Faimba Mazive Macuene Fernando Banguene Funhalouro
+    Chipane         0     4      3       100     100     100       3      100         3
+    Saute           4     0      2       100     100     100       2      100       100
+    Camo-Camo       3     2      0       100     100       2       3      100       100
+    Faimba        100   100    100         0       3       3     100      100       100
+    Mazive        100   100    100         3       0     100     100        2         3
+    Macuene       100   100      2         3     100       0     100      100       100
+    Fernando        3     2      3       100     100     100       0      100       100
+    Banguene      100   100    100       100       2     100     100        0         2
+    Funhalouro      3   100    100       100       3     100     100        2         0;
+
+
+
+
+

@@ -83,6 +83,56 @@ Table d(i,j) Distancia entre la ciudad i y el almacén j
     Fernando        3     2      3       100     100     100       0      100       100
     Banguene      100   100    100       100       2     100     100        0         2
     Funhalouro      3   100    100       100       3     100     100        2         0;
+---------------------------------------------
+$title Modelo #1
+
+* Definición de conjuntos
+Sets
+   i  'ciudades'
+   j  'almacenes';
+
+* Parámetros
+Parameters
+   d(i,j)     'distancia entre la ciudad i y el almacén j';
+
+* Variables
+Variables
+   Z1         'valor del primer objetivo (distancia total)';
+ 
+Binary Variables
+   x(j)       'si el almacén j es un centro de distribución'
+   Y(i,j)     'si la ciudad i se asigna al centro j';
+
+* Ecuaciones
+Equations
+   upper(i,j)     'una ciudad solo puede asignarse a centros abiertos'
+   uniqueness(i)'cada ciudad se asigna a un único centro' 
+   closness(i,j)    'menor igual que tres horas'
+   objetivo1    'función objetivo: minimizar la cantidad de centros';
+*objetivo1 'función objetivo: minimizar la cantidad de centros'
+
+* Definición de las ecuaciones
+upper(i,j).. 
+    Y(i,j) =L= x(j);
+
+uniqueness(i)..
+   sum(j, Y(i,j)) =E= 1;
+      
+closness(i,j)..
+    Y(i,j)*d(i,j) =L= 3
+;
+
+objetivo1..
+   Z1 =E= sum(j,x(j));
+   
+* Incluir datos (asegúrate de tener bien definido 'datos.gms')
+$include 'data_tarea.gms'
+
+* Definir modelo y resolver
+Model Uno /All/;
+* Resolver modelos
+Solve Uno minimizing Z1 using MIP;
+Display Y.l, x.l, Z1.l;
 
 
 

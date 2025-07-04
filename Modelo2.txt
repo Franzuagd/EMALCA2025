@@ -3,6 +3,98 @@ $title Modelo #2
 * Definición de conjuntos
 Sets
    i  'ciudades'
+   j  'almacenes'
+   u  'Carros'
+   r  'summing';
+
+* Parámetros
+Parameters
+   w(i)       'cantidad requerida por cada ciudad'
+   d(i,j)     'distancia entre la ciudad i y el almacén j';
+
+* Variables
+Variables
+   Z           'valor del segundo objetivo (distancia total)'
+   T(i,u)      'instante de llegada del carro u a i'
+   Ca(i,j,u)   'Carga que lleva el carro u desde i hacia j si el carro u va a descargar en j';
+
+Binary Variables
+   h(j)        'se abre centro en j'
+   x(i,j,u)    'el carro u va de i hacia j'
+   Des(i,u)    'el carro u va a descargar en j'
+   Y(i,j)      'si la ciudad i se asigna al centro j';
+
+* Ecuaciones
+Equations
+    via1(j,u)           'via1: centro j es visitado por algún carro u'
+    via2(i,u)           'via2: algún nodo i es origen de un recorrido del carro u' 
+    via3(i,j,u)         'via3: flujo coherente entre i y j para carro u'
+    via4(j,u)           'via4: viaje desde nodo 1 hacia j'
+    nonegativity(i,j,u) 'non negative charge: no se transporta carga negativa'
+    desc(i,j,u)         'quito del peso de carga si se descarga en j'
+    cero(i,j,u)         'no transporto nada si no voy de i a j'
+    centro(j,u)         'no voy a descargar en algo que no sea centro'
+    todos               'paso por todos los centros al menos una vez'
+    max(u)              'un carro pasa como máximo por un centro'
+    sum                 'no más de 4 centros abiertos'
+    objetivo            'objetivo a minimizar'
+;
+
+* ---------- ECUACIONES CORREGIDAS ---------- *
+
+via1(j,u)..
+   sum(i, x(i,j,u)) =E= 1;
+
+via2(i,u)..
+    sum(j, x(i,j,u)) =E= 1;
+
+via3(i,j,u)$(i <> j)..
+    T(i,u) + d(i,j)*x(i,j,u) - 10*(1 - x(i,j,u)) =L= T(j,u);
+
+via4(j,u)$(1 <> j)..
+    T('1',u) + d('1',j)*x('1',j,u) - 10*(1 - x('1',j,u)) =L= T(j,u);
+
+nonegativity(i,j,u)..
+   Ca(i,j,u) =G= 0;
+
+desc(i,j,u)..
+   Ca(i,j,u) - w(j)*Des(j,u) =E= sum(r, Ca(j,i,r));
+
+cero(i,j,u)..
+   Ca(i,j,u) =L= 100 * x(i,j,u);
+
+centro(j,u)..
+   Des(j,u) =L= h(j);
+
+todos..
+   sum((i,u), Des(i,u)) =E= sum(j, h(j));
+
+max(u)..
+    sum(i, Des(i,u)) =L= 1;
+
+sum..
+    sum(j, h(j)) =L= 4;
+
+objetivo..
+    Z =E= sum((i,j,u), Ca(i,j,u)*d(i,j)*0.3 + d(i,j)*x(i,j,u)*8 + h(j)*50);
+
+* Incluir datos
+$include 'data.gms'
+
+* Definir modelo y resolver
+Model Tres /ALL/;
+Solve Tres minimizing Z using MIP;
+
+* Mostrar resultados
+Display Y.l, x.l, h.l, Z.l;
+
+
+----------------
+$title Modelo #2
+
+* Definición de conjuntos
+Sets
+   i  'ciudades'
    j  'almacenes';
 
 * Parámetros
